@@ -1,0 +1,81 @@
+1. Which capabilities API (seccomp-bpf, AppArmor, or SELinux) did you choose? Why did you
+make that choice?
+I have chosen the seccomp-bpf. because seccomp-bpf allow the application developer to specify allowed behaviour in the code. This means developer can find what system calls have been used in the code, then decide how to set the restriction. It has two mode: strict and filter mode can be use at differen case, easy implement.
+
+2. What was the process you used to ascertain the list of system calls required by each program?
+First, I will use strace to run the program once, both client side and dpchild and server side. from there, I will get a list of the system calls. Then I added them one by one. Second, when bad system call happend, I run the strace with the program again, the last system call will be the one that I forgot to add into my list.
+
+3. What system calls are needed by each?
+client:
+        ALLOW_SYSCALL(execve),
+        ALLOW_SYSCALL(brk),
+        ALLOW_SYSCALL(access),
+        ALLOW_SYSCALL(fstat),
+        ALLOW_SYSCALL(openat),
+        ALLOW_SYSCALL(mmap),
+        ALLOW_SYSCALL(close),
+        ALLOW_SYSCALL(read),
+        ALLOW_SYSCALL(arch_prctl),
+        ALLOW_SYSCALL(mprotect),
+	ALLOW_SYSCALL(munmap),
+        ALLOW_SYSCALL(socket),
+        ALLOW_SYSCALL(write),
+        ALLOW_SYSCALL(connect),
+        ALLOW_SYSCALL(sendto),
+        ALLOW_SYSCALL(lseek),
+        ALLOW_SYSCALL(exit_group),
+        ALLOW_SYSCALL(exit),
+
+server:
+	ALLOW_SYSCALL(execve),
+        ALLOW_SYSCALL(brk),
+	ALLOW_SYSCALL(openat),
+        ALLOW_SYSCALL(access),
+        ALLOW_SYSCALL(fstat),
+        ALLOW_SYSCALL(mmap),
+        ALLOW_SYSCALL(close),
+        ALLOW_SYSCALL(read),
+        ALLOW_SYSCALL(arch_prctl),
+        ALLOW_SYSCALL(mprotect),
+	ALLOW_SYSCALL(munmap),
+	ALLOW_SYSCALL(prctl),
+	ALLOW_SYSCALL(seccomp),
+
+        ALLOW_SYSCALL(socket),
+	ALLOW_SYSCALL(setsockopt),
+	ALLOW_SYSCALL(bind),
+	ALLOW_SYSCALL(listen),
+
+	ALLOW_SYSCALL(accept),
+	ALLOW_SYSCALL(clone),
+	ALLOW_SYSCALL(dup),
+	ALLOW_SYSCALL(wait4),
+	ALLOW_SYSCALL(lseek),
+	ALLOW_SYSCALL(exit_group),
+        ALLOW_SYSCALL(write),
+
+	//child process addtion
+        ALLOW_SYSCALL(connect),
+        ALLOW_SYSCALL(sendto),
+        ALLOW_SYSCALL(chdir),
+	ALLOW_SYSCALL(chroot),
+        ALLOW_SYSCALL(stat),
+        ALLOW_SYSCALL(setgroups),
+	ALLOW_SYSCALL(setgid),
+        ALLOW_SYSCALL(setresgid),
+        ALLOW_SYSCALL(setuid),
+	ALLOW_SYSCALL(setresuid),
+        ALLOW_SYSCALL(getcwd),
+        ALLOW_SYSCALL(getuid),
+	ALLOW_SYSCALL(getgid),
+        ALLOW_SYSCALL(fcntl),
+        ALLOW_SYSCALL(exit),
+
+4. What happens when your application calls the prohibited system call? What is the application
+behaviour that results from the call?
+The application process will be killed by SIGSYS. The application will be shut down, Bad system call error will be throwed.
+	
+
+
+
+
